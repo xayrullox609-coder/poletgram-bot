@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Poletgram</title>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #000;
+            color: white;
+            padding-bottom: 75px;
+        }
+
+        /* TOP */
+
+        .top {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 1px solid #222;
+            position: sticky;
+            top: 0;
+            background: #000;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .top-buttons {
+            display: flex;
+            gap: 18px;
+        }
+
+        .top-btn {
+            font-size: 25px;
+            cursor: pointer;
+        }
+
+        /* CONTENT */
+
+        .page {
+            display: none;
+            min-height: calc(100vh - 135px);
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* POST */
+
+        .post {
+            border-bottom: 1px solid #222;
+            padding-bottom: 15px;
+        }
+
+        .post-user {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .username {
+            font-weight: bold;
+        }
+
+        .post-image {
+            width: 100%;
+            height: 350px;
+            background: linear-gradient(135deg, #222, #555);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 22px;
+            padding: 12px;
+            font-size: 26px;
+        }
+
+        .action {
+            cursor: pointer;
+        }
+
+        .caption {
+            padding: 0 12px;
+            font-size: 15px;
+        }
+
+        /* PROFILE */
+
+        .profile {
+            padding: 25px 15px;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: #333;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .profile h2 {
+            margin-top: 12px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 45px;
+            margin: 25px 0;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat b {
+            display: block;
+            font-size: 20px;
+        }
+
+        /* MESSAGES */
+
+        .message {
+            padding: 17px;
+            border-bottom: 1px solid #222;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* NOTIFICATIONS */
+
+        .notification {
+            padding: 18px;
+            border-bottom: 1px solid #222;
+        }
+
+        /* REELS */
+
+        .reel {
+            height: calc(100vh - 135px);
+            background: linear-gradient(135deg, #111, #444);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 70px;
+        }
+
+        /* BOTTOM NAV */
+
+        .bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background: #000;
+            border-top: 1px solid #222;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 20;
+        }
+
+        .nav {
+            text-align: center;
+            font-size: 23px;
+            cursor: pointer;
+        }
+
+        .nav span {
+            display: block;
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        .empty {
+            padding: 50px 20px;
+            text-align: center;
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- TOP -->
+<div class="top">
+    <div class="logo">Poletgram</div>
+
+    <div class="top-buttons">
+        <div class="top-btn" onclick="openPage('messages')">💬</div>
+        <div class="top-btn" onclick="openPage('notifications')">🔔</div>
+    </div>
+</div>
+
+
+<!-- HOME -->
+<div id="home" class="page active">
+
+    <div class="post">
+
+        <div class="post-user">
+            <div class="avatar">👤</div>
+
+            <div>
+                <div class="username">Poletgram</div>
+                <small>@poletgram</small>
+            </div>
+        </div>
+
+        <div class="post-image">
+            📷
+        </div>
+
+        <div class="actions">
+            <div class="action" onclick="likePost(this)">♡</div>
+            <div class="action">💬</div>
+            <div class="action">↗️</div>
+            <div class="action">🎁</div>
+            <div class="action">🔖</div>
+        </div>
+
+        <div class="caption">
+            <b>Poletgram</b> — Telegram ichidagi yangi ijtimoiy platforma 🚀
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- MESSAGES -->
+<div id="messages" class="page">
+
+    <div class="message">
+        <div class="avatar">👤</div>
+        <div>
+            <b>Foydalanuvchi</b>
+            <br>
+            <small>Salom 👋</small>
+        </div>
+    </div>
+
+    <div class="message">
+        <div class="avatar">🧑</div>
+        <div>
+            <b>Poletgram</b>
+            <br>
+            <small>Yangi xabar</small>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- NOTIFICATIONS -->
+<div id="notifications" class="page">
+
+    <div class="notification">
+        ❤️ Sizning postingizga like bosildi.
+    </div>
+
+    <div class="notification">
+        💬 Yangi xabar keldi.
+    </div>
+
+    <div class="notification">
+        🎁 Sizga sovg‘a yuborildi.
+    </div>
+
+</div>
+
+
+<!-- REELS -->
+<div id="reels" class="page">
+
+    <div class="reel">
+        ▶️
+    </div>
+
+</div>
+
+
+<!-- PROFILE -->
+<div id="profile" class="page">
+
+    <div class="profile">
+
+        <div class="profile-avatar">
+            👤
+        </div>
+
+        <h2 id="profileName">Foydalanuvchi</h2>
+
+        <p>@username</p>
+
+        <div class="stats">
+
+            <div class="stat">
+                <b>0</b>
+                Post
+            </div>
+
+            <div class="stat">
+                <b>0</b>
+                Obunachi
+            </div>
+
+            <div class="stat">
+                <b>0</b>
+                Obuna
+            </div>
+
+        </div>
+
+        <p>💰 Poletgram ballari: <b>0</b></p>
+
+    </div>
+
+</div>
+
+
+<!-- BOTTOM -->
+<div class="bottom">
+
+    <div class="nav" onclick="openPage('home')">
+        🏠
+        <span>Bosh sahifa</span>
+    </div>
+
+    <div class="nav" onclick="openPage('reels')">
+        🎬
+        <span>Reels</span>
+    </div>
+
+    <div class="nav" onclick="openPage('messages')">
+        💬
+        <span>Xabarlar</span>
+    </div>
+
+    <div class="nav" onclick="openPage('profile')">
+        👤
+        <span>Profil</span>
+    </div>
+
+</div>
+
+
+<script>
+
+    // Telegram Web App
+    const tg = window.Telegram.WebApp;
+
+    tg.ready();
+    tg.expand();
+
+
+    // Telegram foydalanuvchisini olish
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+
+        const user = tg.initDataUnsafe.user;
+
+        document.getElementById("profileName").innerText =
+            user.first_name || "Foydalanuvchi";
+    }
+
+
+    // Sahifa almashtirish
+    function openPage(page) {
+
+        document.querySelectorAll(".page").forEach(function(el) {
+            el.classList.remove("active");
+        });
+
+        document.getElementById(page).classList.add("active");
+
+        window.scrollTo(0, 0);
+    }
+
+
+    // Like
+    function likePost(element) {
+
+        if (element.innerText === "♡") {
+            element.innerText = "❤️";
+        } else {
+            element.innerText = "♡";
+        }
+    }
+
+</script>
+
+</body>
+</html>
