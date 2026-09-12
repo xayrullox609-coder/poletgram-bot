@@ -1,433 +1,793 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 
-    <title>Poletgram</title>
+<title>Poletgram</title>
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+}
 
-        body {
-            background: #000;
-            color: white;
-            padding-bottom: 75px;
-        }
+body{
+    background:#000;
+    color:#fff;
+    overflow-x:hidden;
+}
 
-        /* TOP */
+button{
+    border:0;
+    outline:0;
+}
 
-        .top {
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            border-bottom: 1px solid #222;
-            position: sticky;
-            top: 0;
-            background: #000;
-            z-index: 10;
-        }
+.app{
+    max-width:600px;
+    margin:auto;
+    min-height:100vh;
+    background:#000;
+}
 
-        .logo {
-            font-size: 25px;
-            font-weight: bold;
-        }
+/* TOP */
 
-        .top-buttons {
-            display: flex;
-            gap: 18px;
-        }
+.topbar{
+    height:64px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 17px;
+    border-bottom:1px solid #202020;
+    position:sticky;
+    top:0;
+    background:rgba(0,0,0,.95);
+    backdrop-filter:blur(15px);
+    z-index:50;
+}
 
-        .top-btn {
-            font-size: 25px;
-            cursor: pointer;
-        }
+.logo{
+    font-size:25px;
+    font-weight:800;
+    letter-spacing:-1px;
+}
 
-        /* CONTENT */
+.top-right{
+    display:flex;
+    gap:20px;
+    align-items:center;
+}
 
-        .page {
-            display: none;
-            min-height: calc(100vh - 135px);
-        }
+.top-icon{
+    font-size:25px;
+    cursor:pointer;
+}
 
-        .page.active {
-            display: block;
-        }
+/* PAGES */
 
-        /* POST */
+.page{
+    display:none;
+    padding-bottom:80px;
+}
 
-        .post {
-            border-bottom: 1px solid #222;
-            padding-bottom: 15px;
-        }
+.page.active{
+    display:block;
+}
 
-        .post-user {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            gap: 10px;
-        }
+/* HOME */
 
-        .avatar {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
+.post{
+    border-bottom:8px solid #0b0b0b;
+}
 
-        .username {
-            font-weight: bold;
-        }
+.post-head{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    padding:13px 14px;
+}
 
-        .post-image {
-            width: 100%;
-            height: 350px;
-            background: linear-gradient(135deg, #222, #555);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 60px;
-        }
+.avatar{
+    width:43px;
+    height:43px;
+    border-radius:50%;
+    object-fit:cover;
+    background:#292929;
+}
 
-        .actions {
-            display: flex;
-            gap: 22px;
-            padding: 12px;
-            font-size: 26px;
-        }
+.user-info{
+    flex:1;
+}
 
-        .action {
-            cursor: pointer;
-        }
+.user-name{
+    font-weight:700;
+    font-size:15px;
+}
 
-        .caption {
-            padding: 0 12px;
-            font-size: 15px;
-        }
+.user-name span{
+    color:#777;
+    font-weight:400;
+    margin-left:3px;
+}
 
-        /* PROFILE */
+.time{
+    color:#777;
+    font-size:12px;
+}
 
-        .profile {
-            padding: 25px 15px;
-            text-align: center;
-        }
+.more{
+    font-size:22px;
+}
 
-        .profile-avatar {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: #333;
-            margin: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-        }
+.post-photo{
+    width:100%;
+    height:360px;
+    background:
+        linear-gradient(135deg,#151515,#353535);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:70px;
+}
 
-        .profile h2 {
-            margin-top: 12px;
-        }
+.post-actions{
+    display:flex;
+    align-items:center;
+    padding:12px 14px 5px;
+    gap:19px;
+}
 
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 45px;
-            margin: 25px 0;
-        }
+.action{
+    font-size:26px;
+    cursor:pointer;
+}
 
-        .stat {
-            text-align: center;
-        }
+.action.save{
+    margin-left:auto;
+}
 
-        .stat b {
-            display: block;
-            font-size: 20px;
-        }
+.likes{
+    padding:2px 14px 6px;
+    font-size:14px;
+    font-weight:bold;
+}
 
-        /* MESSAGES */
+.caption{
+    padding:0 14px 15px;
+    font-size:14px;
+    line-height:21px;
+}
 
-        .message {
-            padding: 17px;
-            border-bottom: 1px solid #222;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
+.caption b{
+    margin-right:5px;
+}
 
-        /* NOTIFICATIONS */
+/* REELS */
 
-        .notification {
-            padding: 18px;
-            border-bottom: 1px solid #222;
-        }
+.reels-title{
+    padding:18px;
+    font-size:24px;
+    font-weight:bold;
+}
 
-        /* REELS */
+.reel{
+    height:calc(100vh - 145px);
+    min-height:500px;
+    position:relative;
+    background:
+        linear-gradient(145deg,#101010,#303030,#111);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
 
-        .reel {
-            height: calc(100vh - 135px);
-            background: linear-gradient(135deg, #111, #444);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 70px;
-        }
+.play{
+    font-size:65px;
+    opacity:.9;
+}
 
-        /* BOTTOM NAV */
+.reel-info{
+    position:absolute;
+    left:16px;
+    bottom:22px;
+}
 
-        .bottom {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 65px;
-            background: #000;
-            border-top: 1px solid #222;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 20;
-        }
+.reel-user{
+    font-weight:bold;
+    font-size:16px;
+}
 
-        .nav {
-            text-align: center;
-            font-size: 23px;
-            cursor: pointer;
-        }
+.reel-text{
+    margin-top:7px;
+    color:#ddd;
+}
 
-        .nav span {
-            display: block;
-            font-size: 11px;
-            margin-top: 3px;
-        }
+/* MESSAGES */
 
-        .empty {
-            padding: 50px 20px;
-            text-align: center;
-            color: #888;
-        }
-    </style>
+.section-title{
+    padding:20px 17px;
+    font-size:25px;
+    font-weight:bold;
+}
+
+.search{
+    margin:0 15px 10px;
+    padding:12px 16px;
+    border-radius:15px;
+    background:#181818;
+    color:#888;
+}
+
+.chat{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:13px 15px;
+    border-bottom:1px solid #191919;
+}
+
+.chat-info{
+    flex:1;
+}
+
+.chat-name{
+    font-weight:bold;
+}
+
+.chat-last{
+    color:#888;
+    margin-top:4px;
+    font-size:13px;
+}
+
+.chat-time{
+    color:#777;
+    font-size:11px;
+}
+
+/* NOTIFICATIONS */
+
+.notification{
+    display:flex;
+    gap:12px;
+    padding:16px;
+    border-bottom:1px solid #191919;
+}
+
+.notification-icon{
+    font-size:28px;
+}
+
+.notification-text{
+    font-size:14px;
+    line-height:20px;
+}
+
+/* PROFILE */
+
+.profile{
+    text-align:center;
+    padding:28px 15px;
+}
+
+.profile-avatar{
+    width:105px;
+    height:105px;
+    border-radius:50%;
+    object-fit:cover;
+    background:#292929;
+    border:3px solid #333;
+}
+
+.profile-name{
+    margin-top:14px;
+    font-size:23px;
+    font-weight:bold;
+}
+
+.profile-username{
+    color:#888;
+    margin-top:4px;
+}
+
+.stats{
+    display:flex;
+    justify-content:space-around;
+    margin:28px 0;
+}
+
+.stat b{
+    display:block;
+    font-size:21px;
+}
+
+.stat span{
+    color:#888;
+    font-size:13px;
+}
+
+.balance{
+    margin:10px 0;
+    padding:17px;
+    background:#171717;
+    border-radius:17px;
+    font-size:17px;
+}
+
+.edit{
+    width:100%;
+    margin-top:10px;
+    padding:13px;
+    border-radius:12px;
+    background:#292929;
+    color:white;
+    font-size:15px;
+}
+
+/* BOTTOM */
+
+.bottom{
+    position:fixed;
+    left:50%;
+    transform:translateX(-50%);
+    bottom:0;
+    width:100%;
+    max-width:600px;
+    height:70px;
+    background:rgba(0,0,0,.96);
+    border-top:1px solid #202020;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    z-index:100;
+}
+
+.nav{
+    width:25%;
+    text-align:center;
+    color:#777;
+    cursor:pointer;
+}
+
+.nav.active{
+    color:#fff;
+}
+
+.nav-icon{
+    font-size:23px;
+    height:28px;
+}
+
+.nav-text{
+    font-size:10px;
+    margin-top:3px;
+}
+
+/* EMPTY */
+
+.empty{
+    text-align:center;
+    color:#777;
+    padding:80px 20px;
+}
+
+</style>
 </head>
 
 <body>
 
-<!-- TOP -->
-<div class="top">
-    <div class="logo">Poletgram</div>
+<div class="app">
 
-    <div class="top-buttons">
-        <div class="top-btn" onclick="openPage('messages')">💬</div>
-        <div class="top-btn" onclick="openPage('notifications')">🔔</div>
-    </div>
+<!-- TOP -->
+
+<header class="topbar">
+
+<div class="logo">Poletgram</div>
+
+<div class="top-right">
+
+<div class="top-icon" onclick="openPage('messages')">
+💬
 </div>
+
+<div class="top-icon" onclick="openPage('notifications')">
+🔔
+</div>
+
+</div>
+
+</header>
 
 
 <!-- HOME -->
-<div id="home" class="page active">
 
-    <div class="post">
+<section id="home" class="page active">
 
-        <div class="post-user">
-            <div class="avatar">👤</div>
+<div class="post">
 
-            <div>
-                <div class="username">Poletgram</div>
-                <small>@poletgram</small>
-            </div>
-        </div>
+<div class="post-head">
 
-        <div class="post-image">
-            📷
-        </div>
+<img id="postAvatar"
+class="avatar"
+src="https://telegram.org/img/t_logo.png">
 
-        <div class="actions">
-            <div class="action" onclick="likePost(this)">♡</div>
-            <div class="action">💬</div>
-            <div class="action">↗️</div>
-            <div class="action">🎁</div>
-            <div class="action">🔖</div>
-        </div>
+<div class="user-info">
 
-        <div class="caption">
-            <b>Poletgram</b> — Telegram ichidagi yangi ijtimoiy platforma 🚀
-        </div>
+<div class="user-name">
+Poletgram <span>✓</span>
+</div>
 
-    </div>
+<div class="time">
+hozir
+</div>
 
 </div>
 
-
-<!-- MESSAGES -->
-<div id="messages" class="page">
-
-    <div class="message">
-        <div class="avatar">👤</div>
-        <div>
-            <b>Foydalanuvchi</b>
-            <br>
-            <small>Salom 👋</small>
-        </div>
-    </div>
-
-    <div class="message">
-        <div class="avatar">🧑</div>
-        <div>
-            <b>Poletgram</b>
-            <br>
-            <small>Yangi xabar</small>
-        </div>
-    </div>
+<div class="more">•••</div>
 
 </div>
 
+<div class="post-photo">
+📷
+</div>
 
-<!-- NOTIFICATIONS -->
-<div id="notifications" class="page">
+<div class="post-actions">
 
-    <div class="notification">
-        ❤️ Sizning postingizga like bosildi.
-    </div>
+<div class="action" onclick="like(this)">
+♡
+</div>
 
-    <div class="notification">
-        💬 Yangi xabar keldi.
-    </div>
+<div class="action">
+💬
+</div>
 
-    <div class="notification">
-        🎁 Sizga sovg‘a yuborildi.
-    </div>
+<div class="action">
+↗️
+</div>
+
+<div class="action">
+🎁
+</div>
+
+<div class="action save">
+🔖
+</div>
 
 </div>
+
+<div class="likes">
+<span id="likeCount">0</span> likes
+</div>
+
+<div class="caption">
+<b>Poletgram</b>
+Telegram ichidagi yangi ijtimoiy platforma 🚀
+</div>
+
+</div>
+
+</section>
 
 
 <!-- REELS -->
-<div id="reels" class="page">
 
-    <div class="reel">
-        ▶️
-    </div>
+<section id="reels" class="page">
+
+<div class="reels-title">
+🎬 Reels
+</div>
+
+<div class="reel">
+
+<div class="play">
+▶️
+</div>
+
+<div class="reel-info">
+
+<div class="reel-user">
+@poletgram
+</div>
+
+<div class="reel-text">
+Poletgram Reels 🚀
+</div>
 
 </div>
+
+</div>
+
+</section>
+
+
+<!-- MESSAGES -->
+
+<section id="messages" class="page">
+
+<div class="section-title">
+💬 Xabarlar
+</div>
+
+<div class="search">
+🔍  Qidirish
+</div>
+
+<div class="chat">
+
+<img class="avatar"
+src="https://telegram.org/img/t_logo.png">
+
+<div class="chat-info">
+
+<div class="chat-name">
+Poletgram
+</div>
+
+<div class="chat-last">
+Yangi xabarlar shu yerda ko‘rinadi
+</div>
+
+</div>
+
+<div class="chat-time">
+hozir
+</div>
+
+</div>
+
+<div class="empty">
+Hozircha boshqa suhbatlar yo‘q
+</div>
+
+</section>
+
+
+<!-- NOTIFICATIONS -->
+
+<section id="notifications" class="page">
+
+<div class="section-title">
+🔔 Bildirishnomalar
+</div>
+
+<div class="notification">
+
+<div class="notification-icon">
+❤️
+</div>
+
+<div class="notification-text">
+Hozircha yangi bildirishnomalar yo‘q.
+</div>
+
+</div>
+
+<div class="notification">
+
+<div class="notification-icon">
+🎁
+</div>
+
+<div class="notification-text">
+Sovg‘alar va boshqa bildirishnomalar shu yerda chiqadi.
+</div>
+
+</div>
+
+</section>
 
 
 <!-- PROFILE -->
-<div id="profile" class="page">
 
-    <div class="profile">
+<section id="profile" class="page">
 
-        <div class="profile-avatar">
-            👤
-        </div>
+<div class="profile">
 
-        <h2 id="profileName">Foydalanuvchi</h2>
+<img
+id="profileAvatar"
+class="profile-avatar"
+src="https://telegram.org/img/t_logo.png">
 
-        <p>@username</p>
+<div id="profileName" class="profile-name">
+Foydalanuvchi
+</div>
 
-        <div class="stats">
+<div id="profileUsername"
+class="profile-username">
+@username
+</div>
 
-            <div class="stat">
-                <b>0</b>
-                Post
-            </div>
+<div class="stats">
 
-            <div class="stat">
-                <b>0</b>
-                Obunachi
-            </div>
+<div class="stat">
+<b>0</b>
+<span>Post</span>
+</div>
 
-            <div class="stat">
-                <b>0</b>
-                Obuna
-            </div>
+<div class="stat">
+<b>0</b>
+<span>Obunachi</span>
+</div>
 
-        </div>
+<div class="stat">
+<b>0</b>
+<span>Obuna</span>
+</div>
 
-        <p>💰 Poletgram ballari: <b>0</b></p>
+</div>
 
-    </div>
+<div class="balance">
+💰 Poletgram ballari: <b>0</b>
+</div>
+
+<button class="edit">
+Profilni tahrirlash
+</button>
+
+</div>
+
+</section>
+
+
+<!-- BOTTOM -->
+
+<nav class="bottom">
+
+<div class="nav active"
+onclick="openPage('home',this)">
+
+<div class="nav-icon">🏠</div>
+<div class="nav-text">Bosh sahifa</div>
 
 </div>
 
 
-<!-- BOTTOM -->
-<div class="bottom">
+<div class="nav"
+onclick="openPage('reels',this)">
 
-    <div class="nav" onclick="openPage('home')">
-        🏠
-        <span>Bosh sahifa</span>
-    </div>
+<div class="nav-icon">🎬</div>
+<div class="nav-text">Reels</div>
 
-    <div class="nav" onclick="openPage('reels')">
-        🎬
-        <span>Reels</span>
-    </div>
+</div>
 
-    <div class="nav" onclick="openPage('messages')">
-        💬
-        <span>Xabarlar</span>
-    </div>
 
-    <div class="nav" onclick="openPage('profile')">
-        👤
-        <span>Profil</span>
-    </div>
+<div class="nav"
+onclick="openPage('messages',this)">
+
+<div class="nav-icon">💬</div>
+<div class="nav-text">Xabarlar</div>
+
+</div>
+
+
+<div class="nav"
+onclick="openPage('profile',this)">
+
+<div class="nav-icon">👤</div>
+<div class="nav-text">Profil</div>
+
+</div>
+
+</nav>
 
 </div>
 
 
 <script>
 
-    // Telegram Web App
-    const tg = window.Telegram.WebApp;
+const tg = window.Telegram.WebApp;
 
-    tg.ready();
-    tg.expand();
+tg.ready();
+tg.expand();
 
 
-    // Telegram foydalanuvchisini olish
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+/* TELEGRAM USER */
 
-        const user = tg.initDataUnsafe.user;
+const user = tg.initDataUnsafe?.user;
 
-        document.getElementById("profileName").innerText =
-            user.first_name || "Foydalanuvchi";
+if(user){
+
+    const fullName =
+        [user.first_name,user.last_name]
+        .filter(Boolean)
+        .join(" ");
+
+    document.getElementById("profileName")
+        .innerText = fullName || "Foydalanuvchi";
+
+    if(user.username){
+
+        document.getElementById("profileUsername")
+            .innerText = "@" + user.username;
+
+    }else{
+
+        document.getElementById("profileUsername")
+            .innerText = "@username";
+
     }
 
+    if(user.photo_url){
 
-    // Sahifa almashtirish
-    function openPage(page) {
+        document.getElementById("profileAvatar")
+            .src = user.photo_url;
 
-        document.querySelectorAll(".page").forEach(function(el) {
-            el.classList.remove("active");
+        document.getElementById("postAvatar")
+            .src = user.photo_url;
+
+    }
+
+}
+
+
+/* PAGE */
+
+function openPage(page,element){
+
+    document
+        .querySelectorAll(".page")
+        .forEach(p=>{
+            p.classList.remove("active");
         });
 
-        document.getElementById(page).classList.add("active");
+    document
+        .getElementById(page)
+        .classList.add("active");
 
-        window.scrollTo(0, 0);
+
+    document
+        .querySelectorAll(".nav")
+        .forEach(n=>{
+            n.classList.remove("active");
+        });
+
+    if(element){
+        element.classList.add("active");
     }
 
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+}
 
-    // Like
-    function likePost(element) {
 
-        if (element.innerText === "♡") {
-            element.innerText = "❤️";
-        } else {
-            element.innerText = "♡";
-        }
+/* LIKE */
+
+function like(element){
+
+    const count =
+        document.getElementById("likeCount");
+
+    let number =
+        parseInt(count.innerText);
+
+    if(element.innerText === "♡"){
+
+        element.innerText = "❤️";
+        number++;
+
+    }else{
+
+        element.innerText = "♡";
+        number--;
+
     }
+
+    count.innerText = number;
+}
+
+
+/* TELEGRAM BACKGROUND */
+
+if(tg.colorScheme === "light"){
+    document.body.style.background="#fff";
+}
 
 </script>
 
