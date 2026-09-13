@@ -1,490 +1,515 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-    <title>Poletgram</title>
-
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-
-        body {
-            background: #f3f5f7;
-            color: #111;
-            min-height: 100vh;
-        }
-
-        button {
-            border: none;
-            cursor: pointer;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* LOADING */
-
-        #loading {
-            position: fixed;
-            inset: 0;
-            background: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            z-index: 9999;
-        }
-
-        .logo {
-            font-size: 42px;
-            font-weight: 800;
-            margin-bottom: 15px;
-        }
-
-        .loader {
-            width: 35px;
-            height: 35px;
-            border: 4px solid #ddd;
-            border-top-color: #0088ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* ROLE */
-
-        #roleScreen {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .role-box {
-            width: 100%;
-            max-width: 380px;
-            text-align: center;
-        }
-
-        .role-box h1 {
-            font-size: 34px;
-            margin-bottom: 35px;
-        }
-
-        .role-button {
-            width: 100%;
-            padding: 18px;
-            margin: 10px 0;
-            border-radius: 16px;
-            background: white;
-            box-shadow: 0 4px 20px rgba(0,0,0,.08);
-            font-size: 19px;
-            font-weight: bold;
-        }
-
-        .role-button.admin {
-            background: #111;
-            color: white;
-        }
-
-        /* PROFILE SETUP */
-
-        #setupScreen {
-            min-height: 100vh;
-            padding: 25px 18px;
-        }
-
-        .setup-box {
-            max-width: 450px;
-            margin: auto;
-            background: white;
-            padding: 25px;
-            border-radius: 22px;
-            box-shadow: 0 5px 25px rgba(0,0,0,.08);
-        }
-
-        .setup-box h2 {
-            margin-bottom: 8px;
-        }
-
-        .setup-box p {
-            color: #777;
-            margin-bottom: 20px;
-        }
-
-        .avatar-area {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .avatar {
-            width: 95px;
-            height: 95px;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #ddd;
-            display: block;
-            margin: auto;
-        }
-
-        .avatar-upload {
-            margin-top: 10px;
-            color: #0088ff;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        input,
-        textarea {
-            width: 100%;
-            border: 1px solid #ddd;
-            border-radius: 13px;
-            padding: 14px;
-            font-size: 16px;
-            outline: none;
-            margin-bottom: 12px;
-            background: #fafafa;
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 90px;
-        }
-
-        input:focus,
-        textarea:focus {
-            border-color: #0088ff;
-            background: white;
-        }
-
-        .username-status {
-            font-size: 13px;
-            margin: -5px 0 12px;
-            min-height: 18px;
-        }
-
-        .success {
-            color: #13a05a;
-        }
-
-        .error {
-            color: #e53935;
-        }
-
-        .primary {
-            width: 100%;
-            background: #0088ff;
-            color: white;
-            padding: 15px;
-            border-radius: 13px;
-            font-size: 17px;
-            font-weight: bold;
-        }
-
-        .secondary {
-            width: 100%;
-            background: #eee;
-            color: #111;
-            padding: 13px;
-            border-radius: 13px;
-            font-size: 16px;
-            margin-top: 8px;
-        }
-
-        .admin-request {
-            width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            background: #fff3cd;
-            color: #795500;
-            margin-bottom: 12px;
-            font-weight: bold;
-        }
-
-        /* APP */
-
-        #app {
-            min-height: 100vh;
-            padding-bottom: 75px;
-        }
-
-        .topbar {
-            height: 60px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            border-bottom: 1px solid #eee;
-            position: sticky;
-            top: 0;
-            z-index: 20;
-        }
-
-        .top-logo {
-            font-size: 23px;
-            font-weight: 800;
-        }
-
-        .top-icons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .icon-button {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #f1f2f4;
-            font-size: 19px;
-        }
-
-        .content {
-            max-width: 600px;
-            margin: auto;
-            padding: 15px;
-        }
-
-        .post {
-            background: white;
-            border-radius: 18px;
-            overflow: hidden;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,.05);
-        }
-
-        .post-head {
-            padding: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .small-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #ddd;
-        }
-
-        .post-image {
-            width: 100%;
-            height: 300px;
-            object-fit: cover;
-            background: #ddd;
-        }
-
-        .post-actions {
-            padding: 12px;
-            display: flex;
-            gap: 18px;
-            font-size: 23px;
-        }
-
-        .post-text {
-            padding: 0 12px 15px;
-        }
-
-        /* PROFILE */
-
-        .profile-card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            text-align: center;
-        }
-
-        .profile-avatar {
-            width: 115px;
-            height: 115px;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #ddd;
-        }
-
-        .profile-name {
-            font-size: 23px;
-            font-weight: bold;
-            margin-top: 12px;
-        }
-
-        .profile-username {
-            color: #0088ff;
-            margin-top: 5px;
-        }
-
-        .profile-bio {
-            margin-top: 15px;
-            color: #555;
-            white-space: pre-wrap;
-        }
-
-        /* BOTTOM */
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 65px;
-            background: white;
-            border-top: 1px solid #ddd;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .nav-btn {
-            background: none;
-            font-size: 23px;
-            color: #777;
-        }
-
-        .nav-btn.active {
-            color: #0088ff;
-        }
-
-        /* ADMIN */
-
-        #adminScreen {
-            min-height: 100vh;
-            padding-bottom: 30px;
-        }
-
-        .admin-header {
-            background: #111;
-            color: white;
-            padding: 20px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .admin-header h2 {
-            margin-bottom: 5px;
-        }
-
-        .admin-content {
-            max-width: 650px;
-            margin: auto;
-            padding: 15px;
-        }
-
-        .admin-card {
-            background: white;
-            border-radius: 18px;
-            padding: 18px;
-            margin-bottom: 15px;
-            box-shadow: 0 3px 15px rgba(0,0,0,.06);
-        }
-
-        .admin-card h3 {
-            margin-bottom: 15px;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-
-        .stat {
-            background: #f4f5f6;
-            padding: 15px 5px;
-            text-align: center;
-            border-radius: 13px;
-        }
-
-        .stat-number {
-            font-size: 23px;
-            font-weight: bold;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #777;
-            margin-top: 4px;
-        }
-
-        .request-item {
-            border: 1px solid #eee;
-            padding: 13px;
-            border-radius: 13px;
-            margin-bottom: 10px;
-        }
-
-        .request-actions {
-            display: flex;
-            gap: 7px;
-            margin-top: 10px;
-        }
-
-        .approve {
-            flex: 1;
-            padding: 10px;
-            border-radius: 10px;
-            background: #13a05a;
-            color: white;
-        }
-
-        .reject {
-            flex: 1;
-            padding: 10px;
-            border-radius: 10px;
-            background: #e53935;
-            color: white;
-        }
-
-        .release {
-            width: 100%;
-            padding: 10px;
-            border-radius: 10px;
-            background: #eee;
-            margin-top: 8px;
-        }
-
-        .back-member {
-            width: 100%;
-            background: white;
-            color: #111;
-            padding: 13px;
-            border-radius: 12px;
-            margin-top: 10px;
-        }
-
-        /* TOAST */
-
-        #toast {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #111;
-            color: white;
-            padding: 12px 18px;
-            border-radius: 12px;
-            z-index: 9999;
-            max-width: 90%;
-            text-align: center;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<title>Poletgram</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f3f5f7;
+    color:#111;
+    min-height:100vh;
+}
+
+button{
+    border:0;
+    cursor:pointer;
+}
+
+input,textarea{
+    font-family:Arial,sans-serif;
+}
+
+.hidden{
+    display:none!important;
+}
+
+/* LOADING */
+
+#loading{
+    position:fixed;
+    inset:0;
+    background:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    z-index:99999;
+}
+
+.logo{
+    font-size:42px;
+    font-weight:800;
+    margin-bottom:18px;
+}
+
+.loader{
+    width:36px;
+    height:36px;
+    border:4px solid #ddd;
+    border-top-color:#0088ff;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+    to{transform:rotate(360deg)}
+}
+
+/* COMMON */
+
+.page{
+    min-height:100vh;
+}
+
+.card{
+    background:white;
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 3px 15px rgba(0,0,0,.06);
+}
+
+.primary{
+    width:100%;
+    padding:15px;
+    border-radius:14px;
+    background:#0088ff;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+}
+
+.secondary{
+    width:100%;
+    padding:14px;
+    border-radius:14px;
+    background:#eee;
+    color:#111;
+    font-size:16px;
+    margin-top:9px;
+}
+
+input,textarea{
+    width:100%;
+    padding:14px;
+    border:1px solid #ddd;
+    border-radius:13px;
+    outline:none;
+    background:#fafafa;
+    font-size:16px;
+    margin-bottom:12px;
+}
+
+input:focus,textarea:focus{
+    background:white;
+    border-color:#0088ff;
+}
+
+textarea{
+    min-height:90px;
+    resize:vertical;
+}
+
+/* ROLE */
+
+#roleScreen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.role-box{
+    width:100%;
+    max-width:380px;
+    text-align:center;
+}
+
+.role-box h1{
+    font-size:35px;
+    margin-bottom:30px;
+}
+
+.role-button{
+    width:100%;
+    padding:18px;
+    margin:8px 0;
+    border-radius:16px;
+    background:white;
+    box-shadow:0 4px 20px rgba(0,0,0,.08);
+    font-size:18px;
+    font-weight:bold;
+}
+
+.role-button.admin{
+    background:#111;
+    color:white;
+}
+
+/* SETUP */
+
+#setupScreen{
+    min-height:100vh;
+    padding:20px;
+}
+
+.setup-box{
+    max-width:450px;
+    margin:auto;
+    padding:24px;
+    background:white;
+    border-radius:22px;
+    box-shadow:0 5px 25px rgba(0,0,0,.08);
+}
+
+.setup-box h2{
+    margin-bottom:8px;
+}
+
+.setup-box>p{
+    color:#777;
+    margin-bottom:20px;
+}
+
+.avatar-area{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.avatar{
+    width:100px;
+    height:100px;
+    border-radius:50%;
+    object-fit:cover;
+    display:block;
+    margin:auto;
+    background:#ddd;
+}
+
+.avatar-upload{
+    display:inline-block;
+    margin-top:10px;
+    color:#0088ff;
+    font-weight:bold;
+}
+
+.username-status{
+    min-height:20px;
+    margin:-5px 0 10px;
+    font-size:13px;
+}
+
+.success{
+    color:#13a05a;
+}
+
+.error{
+    color:#e53935;
+}
+
+.admin-request{
+    width:100%;
+    padding:13px;
+    margin-bottom:12px;
+    border-radius:13px;
+    background:#fff3cd;
+    color:#795500;
+    font-weight:bold;
+}
+
+/* MAIN APP */
+
+#app{
+    min-height:100vh;
+    padding-bottom:75px;
+}
+
+.topbar{
+    height:60px;
+    background:white;
+    border-bottom:1px solid #eee;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 15px;
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+.top-logo{
+    font-size:23px;
+    font-weight:800;
+}
+
+.top-icons{
+    display:flex;
+    gap:8px;
+}
+
+.icon-button{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:#f1f2f4;
+    font-size:19px;
+}
+
+.content{
+    max-width:600px;
+    margin:auto;
+    padding:15px;
+}
+
+/* HOME */
+
+.empty{
+    text-align:center;
+    padding:70px 20px;
+    color:#777;
+}
+
+.empty-icon{
+    font-size:55px;
+    margin-bottom:15px;
+}
+
+.post{
+    background:white;
+    border-radius:18px;
+    overflow:hidden;
+    margin-bottom:15px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+}
+
+.post-head{
+    padding:12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.small-avatar{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    object-fit:cover;
+    background:#ddd;
+}
+
+.post-image{
+    width:100%;
+    max-height:500px;
+    object-fit:cover;
+}
+
+.post-actions{
+    display:flex;
+    gap:20px;
+    padding:12px;
+    font-size:23px;
+}
+
+.post-text{
+    padding:0 12px 15px;
+}
+
+/* PROFILE */
+
+.profile-card{
+    background:white;
+    border-radius:20px;
+    padding:25px;
+    text-align:center;
+}
+
+.profile-avatar{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    object-fit:cover;
+    background:#ddd;
+}
+
+.profile-name{
+    font-size:24px;
+    font-weight:bold;
+    margin-top:12px;
+}
+
+.profile-username{
+    color:#0088ff;
+    margin-top:5px;
+}
+
+.profile-bio{
+    margin-top:15px;
+    color:#555;
+    white-space:pre-wrap;
+}
+
+.edit-profile{
+    margin-top:20px;
+}
+
+/* BOTTOM NAV */
+
+.bottom-nav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    height:65px;
+    background:white;
+    border-top:1px solid #ddd;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    z-index:1000;
+}
+
+.nav-btn{
+    background:none;
+    font-size:23px;
+    color:#777;
+}
+
+.nav-btn.active{
+    color:#0088ff;
+}
+
+/* ADMIN */
+
+#adminScreen{
+    min-height:100vh;
+    padding-bottom:30px;
+}
+
+.admin-header{
+    background:#111;
+    color:white;
+    padding:20px;
+}
+
+.admin-header h2{
+    margin-bottom:5px;
+}
+
+.admin-content{
+    max-width:650px;
+    margin:auto;
+    padding:15px;
+}
+
+.admin-card{
+    background:white;
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:15px;
+    box-shadow:0 3px 15px rgba(0,0,0,.06);
+}
+
+.admin-card h3{
+    margin-bottom:15px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+}
+
+.stat{
+    background:#f4f5f6;
+    padding:15px 5px;
+    text-align:center;
+    border-radius:13px;
+}
+
+.stat-number{
+    font-size:23px;
+    font-weight:bold;
+}
+
+.stat-label{
+    font-size:12px;
+    color:#777;
+    margin-top:4px;
+}
+
+.request-item{
+    border:1px solid #eee;
+    padding:13px;
+    border-radius:13px;
+    margin-bottom:10px;
+}
+
+.request-actions{
+    display:flex;
+    gap:7px;
+    margin-top:10px;
+}
+
+.approve,.reject{
+    flex:1;
+    padding:10px;
+    border-radius:10px;
+    color:white;
+}
+
+.approve{
+    background:#13a05a;
+}
+
+.reject{
+    background:#e53935;
+}
+
+.release{
+    width:100%;
+    padding:10px;
+    border-radius:10px;
+    background:#eee;
+    margin-top:8px;
+}
+
+.back-member{
+    width:100%;
+    padding:13px;
+    margin-top:12px;
+    border-radius:12px;
+    background:white;
+    color:#111;
+}
+
+/* TOAST */
+
+#toast{
+    position:fixed;
+    bottom:80px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#111;
+    color:white;
+    padding:12px 18px;
+    border-radius:12px;
+    z-index:999999;
+    max-width:90%;
+    text-align:center;
+}
+</style>
 </head>
 
 <body>
@@ -515,7 +540,9 @@
 
     <div class="setup-box">
 
-        <h2 id="setupTitle">Poletgram profilini yarating</h2>
+        <h2 id="setupTitle">
+            Poletgram profilini yarating
+        </h2>
 
         <p>
             Bu profil Telegram profilingizdan alohida bo‘ladi.
@@ -530,6 +557,7 @@
 
             <label class="avatar-upload">
                 📷 Profil rasmini tanlash
+
                 <input
                     id="avatarInput"
                     type="file"
@@ -548,7 +576,9 @@
             autocomplete="off"
         >
 
-        <div id="usernameStatus" class="username-status"></div>
+        <div id="usernameStatus"
+             class="username-status">
+        </div>
 
         <button
             id="requestButton"
@@ -567,8 +597,8 @@
         <textarea
             id="bioInput"
             placeholder="Bio..."
-            maxlength="160"
-        ></textarea>
+            maxlength="160">
+        </textarea>
 
         <button
             id="saveProfileButton"
@@ -598,11 +628,13 @@
 
         <div class="top-icons">
 
-            <button class="icon-button">
+            <button class="icon-button"
+                    onclick="showToast('Bildirishnomalar tez orada')">
                 🔔
             </button>
 
-            <button class="icon-button">
+            <button class="icon-button"
+                    onclick="showToast('Xabarlar tez orada')">
                 💬
             </button>
 
@@ -622,12 +654,14 @@
         </button>
 
         <button
+            id="reelsNav"
             class="nav-btn"
             onclick="showReels()">
             ▶️
         </button>
 
         <button
+            id="profileNav"
             class="nav-btn"
             onclick="showProfile()">
             👤
@@ -644,9 +678,7 @@
 
         <h2>👑 Poletgram Admin</h2>
 
-        <div>
-            Admin panel
-        </div>
+        <div>Admin panel</div>
 
         <button
             class="back-member"
@@ -658,7 +690,6 @@
 
     <div class="admin-content">
 
-        <!-- STATS -->
         <div class="admin-card">
 
             <h3>📊 Statistika</h3>
@@ -666,25 +697,39 @@
             <div class="stats">
 
                 <div class="stat">
-                    <div id="statUsers" class="stat-number">0</div>
-                    <div class="stat-label">A'zolar</div>
+                    <div id="statUsers"
+                         class="stat-number">
+                        0
+                    </div>
+                    <div class="stat-label">
+                        A'zolar
+                    </div>
                 </div>
 
                 <div class="stat">
-                    <div id="statReserved" class="stat-number">0</div>
-                    <div class="stat-label">Rezerv</div>
+                    <div id="statReserved"
+                         class="stat-number">
+                        0
+                    </div>
+                    <div class="stat-label">
+                        Rezerv
+                    </div>
                 </div>
 
                 <div class="stat">
-                    <div id="statRequests" class="stat-number">0</div>
-                    <div class="stat-label">So‘rov</div>
+                    <div id="statRequests"
+                         class="stat-number">
+                        0
+                    </div>
+                    <div class="stat-label">
+                        So‘rov
+                    </div>
                 </div>
 
             </div>
 
         </div>
 
-        <!-- RESERVE -->
         <div class="admin-card">
 
             <h3>🔐 Username egallash</h3>
@@ -704,7 +749,6 @@
 
         </div>
 
-        <!-- REQUESTS -->
         <div class="admin-card">
 
             <h3>📩 Username so‘rovlari</h3>
@@ -715,7 +759,6 @@
 
         </div>
 
-        <!-- RESERVED -->
         <div class="admin-card">
 
             <h3>🔒 Rezerv qilingan username'lar</h3>
@@ -736,144 +779,267 @@
 
 <script>
 
-const tg = window.Telegram.WebApp;
+/* =========================================
+   BACKEND
+========================================= */
 
-tg.ready();
-tg.expand();
+const BACKEND_URL =
+    "https://poletgram-bot-6hcx.onrender.com";
+
+
+/* =========================================
+   TELEGRAM
+========================================= */
+
+const tg =
+    window.Telegram?.WebApp || null;
+
+if(tg){
+    try{
+        tg.ready();
+        tg.expand();
+    }catch(e){}
+}
+
+
+/* =========================================
+   STATE
+========================================= */
 
 const state = {
-    me: null,
-    profile: null,
-    isAdmin: false,
-    avatar: "",
-    editing: false,
-    usernameAvailable: false,
-    usernameReserved: false
+
+    me:null,
+
+    profile:null,
+
+    isAdmin:false,
+
+    avatar:"",
+
+    editing:false,
+
+    usernameAvailable:false,
+
+    usernameReserved:false,
+
+    currentUsername:""
+
 };
 
 
-/* =========================
-   TELEGRAM API
-========================= */
+/* =========================================
+   HELPERS
+========================================= */
 
-function getInitData() {
+function show(id){
+    const el=document.getElementById(id);
+    if(el) el.classList.remove("hidden");
+}
+
+
+function hide(id){
+    const el=document.getElementById(id);
+    if(el) el.classList.add("hidden");
+}
+
+
+let toastTimer;
+
+function showToast(message){
+
+    const toast=document.getElementById("toast");
+
+    toast.textContent=message;
+
+    toast.classList.remove("hidden");
+
+    clearTimeout(toastTimer);
+
+    toastTimer=setTimeout(()=>{
+        toast.classList.add("hidden");
+    },3000);
+}
+
+
+/* =========================================
+   TELEGRAM AUTH DATA
+========================================= */
+
+function getInitData(){
+
+    if(!tg) return "";
+
     return tg.initData || "";
 }
 
 
-async function api(url, options = {}) {
+/* =========================================
+   API
+========================================= */
 
-    const headers = {
-        "Content-Type": "application/json",
-        "X-Telegram-Init-Data": getInitData()
+async function api(url,options={}){
+
+    const headers={
+        "Content-Type":"application/json",
+        "X-Telegram-Init-Data":getInitData()
     };
 
-    const response = await fetch(url, {
-        ...options,
-        headers: {
-            ...headers,
-            ...(options.headers || {})
+    const response=await fetch(
+        BACKEND_URL+url,
+        {
+            ...options,
+            headers:{
+                ...headers,
+                ...(options.headers||{})
+            }
         }
-    });
+    );
 
     let data;
 
-    try {
-        data = await response.json();
-    } catch {
-        throw new Error("Server javobi noto‘g‘ri.");
+    try{
+        data=await response.json();
+    }
+    catch{
+        throw new Error(
+            "Server javobi noto‘g‘ri."
+        );
     }
 
-    if (!response.ok) {
-        throw new Error(data.error || "Xatolik yuz berdi.");
+    if(!response.ok){
+
+        throw new Error(
+            data.error ||
+            "Xatolik yuz berdi."
+        );
     }
 
     return data;
 }
 
 
-/* =========================
+/* =========================================
    START
-========================= */
+========================================= */
 
-async function start() {
+async function start(){
 
-    if (!getInitData()) {
+    try{
+
+        /*
+         Telegram Web App ichidan
+         ochilganini tekshiramiz.
+        */
+
+        if(!tg || !tg.initData){
+
+            hide("loading");
+
+            show("setupScreen");
+
+            document.getElementById(
+                "setupScreen"
+            ).innerHTML=`
+                <div class="setup-box">
+                    <h2>Poletgram</h2>
+                    <p>
+                        Poletgram Web App'ni
+                        Telegram ichidan oching.
+                    </p>
+                </div>
+            `;
+
+            return;
+        }
+
+
+        const data=
+            await api("/api/me");
+
+
+        state.me=data;
+
+        state.profile=data.profile;
+
+        state.isAdmin=data.is_admin;
+
 
         hide("loading");
 
-        show("setupScreen");
 
-        document.getElementById("setupScreen").innerHTML = `
-            <div class="setup-box">
-                <h2>Poletgram</h2>
-                <p>
-                    Iltimos, Poletgram Web App'ni Telegram ichidan oching.
-                </p>
-            </div>
-        `;
-
-        return;
-    }
-
-    try {
-
-        const data = await api("/api/me");
-
-        state.me = data;
-        state.profile = data.profile;
-        state.isAdmin = data.is_admin;
-
-        hide("loading");
-
-        if (!state.profile) {
+        if(!state.profile){
 
             showSetup(false);
 
             return;
         }
 
-        if (state.isAdmin) {
+
+        if(state.isAdmin){
 
             show("roleScreen");
 
-        } else {
+        }else{
 
             openMember();
 
         }
 
-    } catch (error) {
+    }
+    catch(error){
 
         hide("loading");
 
-        showToast(error.message);
+        show("setupScreen");
 
-        showSetup(false);
+        document.getElementById(
+            "setupScreen"
+        ).innerHTML=`
+            <div class="setup-box">
+
+                <h2>Poletgram</h2>
+
+                <p>
+                    ${escapeHtml(
+                        error.message
+                    )}
+                </p>
+
+                <button
+                    class="primary"
+                    onclick="location.reload()">
+                    Qayta urinish
+                </button>
+
+            </div>
+        `;
     }
 }
 
 
-document.addEventListener("DOMContentLoaded", start);
+/* =========================================
+   SAFE HTML
+========================================= */
 
+function escapeHtml(text){
 
-/* =========================
-   SCREEN HELPERS
-========================= */
-
-function show(id) {
-    document.getElementById(id).classList.remove("hidden");
+    return String(text)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
 }
 
 
-function hide(id) {
-    document.getElementById(id).classList.add("hidden");
-}
+/* =========================================
+   MEMBER
+========================================= */
 
-
-function openMember() {
+function openMember(){
 
     hide("roleScreen");
+
     hide("adminScreen");
 
     show("app");
@@ -882,16 +1048,23 @@ function openMember() {
 }
 
 
-function openAdmin() {
+/* =========================================
+   ADMIN
+========================================= */
 
-    if (!state.isAdmin) {
+function openAdmin(){
 
-        showToast("Siz admin emassiz.");
+    if(!state.isAdmin){
+
+        showToast(
+            "Siz admin emassiz."
+        );
 
         return;
     }
 
     hide("roleScreen");
+
     hide("app");
 
     show("adminScreen");
@@ -900,99 +1073,152 @@ function openAdmin() {
 }
 
 
-/* =========================
+/* =========================================
    PROFILE SETUP
-========================= */
+========================================= */
 
-function showSetup(edit = false) {
+function showSetup(edit=false){
 
-    state.editing = edit;
+    state.editing=edit;
 
     hide("app");
+
     hide("adminScreen");
+
     hide("roleScreen");
 
     show("setupScreen");
 
-    document.getElementById("setupTitle").textContent =
+
+    document.getElementById(
+        "setupTitle"
+    ).textContent=
+
         edit
         ? "Profilni tahrirlash"
         : "Poletgram profilini yarating";
 
-    document.getElementById("saveProfileButton").textContent =
+
+    document.getElementById(
+        "saveProfileButton"
+    ).textContent=
+
         edit
         ? "Saqlash"
         : "Profil yaratish";
 
-    document.getElementById("cancelEditButton")
-        .classList.toggle("hidden", !edit);
 
-    if (edit && state.profile) {
+    document.getElementById(
+        "cancelEditButton"
+    ).classList.toggle(
+        "hidden",
+        !edit
+    );
 
-        document.getElementById("usernameInput").value =
+
+    if(edit && state.profile){
+
+        document.getElementById(
+            "usernameInput"
+        ).value=
             state.profile.username || "";
 
-        document.getElementById("nameInput").value =
+        document.getElementById(
+            "nameInput"
+        ).value=
             state.profile.name || "";
 
-        document.getElementById("bioInput").value =
+        document.getElementById(
+            "bioInput"
+        ).value=
             state.profile.bio || "";
 
-        state.avatar = state.profile.avatar || "";
+        state.avatar=
+            state.profile.avatar || "";
 
         updateAvatarPreview();
 
-    } else {
+    }else{
 
-        const user = tg.initDataUnsafe?.user;
+        const user=
+            tg?.initDataUnsafe?.user;
 
-        document.getElementById("nameInput").value =
-            [user?.first_name, user?.last_name]
+        document.getElementById(
+            "usernameInput"
+        ).value="";
+
+        document.getElementById(
+            "nameInput"
+        ).value=
+            [
+                user?.first_name,
+                user?.last_name
+            ]
             .filter(Boolean)
             .join(" ");
 
-        document.getElementById("bioInput").value = "";
+        document.getElementById(
+            "bioInput"
+        ).value="";
 
-        state.avatar = user?.photo_url || "";
+        state.avatar=
+            user?.photo_url || "";
 
         updateAvatarPreview();
     }
+
+    state.usernameAvailable=false;
+
+    state.usernameReserved=false;
+
+    document.getElementById(
+        "usernameStatus"
+    ).textContent="";
+
+    hide("requestButton");
 }
 
 
-function closeSetup() {
+function closeSetup(){
+
+    hide("setupScreen");
 
     show("app");
-    hide("setupScreen");
 
     showProfile();
 }
 
 
-/* =========================
+/* =========================================
    AVATAR
-========================= */
+========================================= */
 
-document.getElementById("avatarInput")
-    .addEventListener("change", async function () {
+document
+.getElementById("avatarInput")
+.addEventListener(
+    "change",
+    async function(){
 
-        const file = this.files[0];
+        const file=this.files[0];
 
-        if (!file) return;
+        if(!file) return;
 
-        try {
+        try{
 
-            state.avatar = await resizeImage(file);
+            state.avatar=
+                await resizeImage(file);
 
             updateAvatarPreview();
 
-        } catch {
-
-            showToast("Rasmni yuklashda xatolik.");
         }
-    });
+        catch{
+
+            showToast(
+                "Rasmni yuklashda xatolik."
+            );
+        }
+    }
+);
 
 
-function resizeImage(file) {
-
-    r
+functi
