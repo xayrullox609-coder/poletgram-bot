@@ -1015,3 +1015,195 @@ def admin_reject():
 
     if not request_id:
         return error(
+            "So‘rov ID topilmadi."
+        )
+
+    try:
+        request_id = int(request_id)
+    except:
+        return error(
+            "So‘rov ID noto‘g‘ri."
+        )
+
+    connection = db()
+
+    try:
+        row = connection.execute(
+            """
+            SELECT username, telegram_id
+            FROM username_requests
+            WHERE id = ?
+            AND status = 'pending'
+            """,
+            (request_id,)
+        ).fetchone()
+
+        if not row:
+            return error(
+                "So‘rov topilmadi yoki allaqachon ko‘rib chiqilgan.",
+                404
+            )
+
+        connection.execute(
+            """
+            UPDATE username_requests
+            SET status = 'rejected'
+            WHERE id = ?
+            """,
+            (request_id,)
+        )
+
+        connection.commit()
+
+        return jsonify({
+            "success": True
+        })
+
+    finally:
+        connection.close()
+
+
+# ==============================
+# ADMIN RESERVED USERNAMES
+# ==============================
+
+@app.route("/api/admin/reserved")
+def admin_reserved():
+
+    admin, response = require_admin()
+
+    if response:
+        return response
+
+    connection = db()
+
+    rows = connection.execute(
+        """
+        SELECT username, admin_id, created_at
+        FROM reserved_usernames
+        ORDER BY created_at DESC
+        """
+    ).fetchall()
+
+    connection.close()
+
+    return jsonify({
+        "reserved": [
+            dict(row)
+            for row in rows
+        ]
+    })
+
+
+# ==============================
+# ADMIN RELEASE USERNAME
+# ==============================
+
+@app.route("/api/admin/release", methods=["POST"])
+def admin_release():
+
+    admin, response = require_admin()
+
+    if response:
+        return response
+
+    data = request.get_json() or {}
+
+    username = str(
+        data.get("username", "")
+    ).strip().lower().lstrip("@")
+
+    if not valid_username(username):
+        return error(
+            "Username noto‘g‘ri."
+        )
+
+    connection = db()
+
+    row = connection.execute(
+        """
+        SELECT username
+        FROM reserved_usernames
+        WHERE username = ?
+        """,
+        (username,)
+    ).fetchone()
+
+    if not row:
+        connection.close()
+
+        return error(
+            "Bu username rezerv qilinmagan.",
+            404
+        )
+
+    connection.execute(
+        """
+        DELETE FROM reserved_usernames
+        WHERE username = ?
+        """,
+        (username,)
+    )
+
+    connection.commit()
+    connection.close()
+
+    return jsonify({
+        "success": True,
+        "username": username
+    })
+
+
+# ==============================
+# ADMIN STATS
+# ==============================
+
+@app.route("/api/admin/stats")
+def admin_stats():
+
+    admin, response = require_admin()
+
+    if response:
+        return response
+
+    connection = db()
+
+    users = connection.execute(
+        "SELECT COUNT(*) AS count FROM users"
+    ).fetchone()["count"]
+
+    reserved = connection.execute(
+        "SELECT COUNT(*) AS count FROM reserved_usernames"
+    ).fetchone()["count"]
+
+    requests = connection.execute(
+        """
+        SELECT COUNT(*) AS count
+        FROM username_requests
+        WHERE status = 'pending'
+        """
+    ).fetchone()["count"]
+
+    connection.close()
+
+    return jsonify({
+        "users": users,
+        "reserved_usernames": reserved,
+        "pending_requests": requests
+    })
+
+
+# ==============================
+# START
+# ==============================
+
+if __name__ == "__main__":
+
+    port = int(
+        os.getenv("PORT", 10000)
+    )
+
+    app.run(
+        host="0.0.0.0",
+        port=port
+    )
