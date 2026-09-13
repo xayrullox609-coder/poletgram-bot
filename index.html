@@ -1221,4 +1221,639 @@ document
 );
 
 
-functi
+function handleAvatar(event){
+    const file = event.target.files?.[0];
+
+    if(!file) return;
+
+    if(!file.type.startsWith("image/")){
+        toast("Faqat rasm tanlang");
+        return;
+    }
+
+    if(file.size > 5 * 1024 * 1024){
+        toast("Rasm hajmi 5 MB dan oshmasin");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+        state.avatar = e.target.result;
+
+        const avatar = document.getElementById("avatarPreview");
+
+        if(avatar){
+            avatar.innerHTML = `
+                <img
+                    src="${state.avatar}"
+                    style="
+                        width:100%;
+                        height:100%;
+                        object-fit:cover;
+                        border-radius:50%;
+                    "
+                >
+            `;
+        }
+    };
+
+    reader.readAsDataURL(file);
+}
+
+
+function checkUsername(){
+    const input = document.getElementById("setupUsername");
+
+    if(!input) return;
+
+    const username = input.value
+        .trim()
+        .replace(/^@/, "")
+        .toLowerCase();
+
+    state.usernameAvailable = false;
+    state.usernameReserved = false;
+
+    const result = document.getElementById("usernameStatus");
+
+    if(!result) return;
+
+    if(username.length < 4){
+        result.textContent = "Kamida 4 ta belgi";
+        result.style.color = "#888";
+        return;
+    }
+
+    if(!/^[a-zA-Z0-9_]+$/.test(username)){
+        result.textContent = "Faqat harf, raqam va _ ishlating";
+        result.style.color = "#f44336";
+        return;
+    }
+
+    result.textContent = "Tekshirilmoqda...";
+    result.style.color = "#888";
+
+    clearTimeout(window.usernameTimer);
+
+    window.usernameTimer = setTimeout(async () => {
+        try{
+            const data = await api(
+                "/api/username/check?username=" +
+                encodeURIComponent(username)
+            );
+
+            if(data.available){
+                state.usernameAvailable = true;
+                result.textContent = "✅ Username bo‘sh";
+                result.style.color = "#22c55e";
+            }
+            else if(data.reserved){
+                state.usernameReserved = true;
+                result.textContent = "🔒 Bu username admin tomonidan band qilingan";
+                result.style.color = "#f59e0b";
+            }
+            else{
+                result.textContent = "❌ Bu username band";
+                result.style.color = "#f44336";
+            }
+
+        }catch(error){
+            console.error(error);
+            result.textContent = "Tekshirishda xatolik";
+            result.style.color = "#f44336";
+        }
+    }, 500);
+}
+
+
+async function saveProfile(){
+    const nameInput = document.getElementById("setupName");
+    const usernameInput = document.getElementById("setupUsername");
+    const bioInput = document.getElementById("setupBio");
+
+    const name = nameInput?.value.trim() || "";
+    const username = usernameInput?.value
+        .trim()
+        .replace(/^@/, "")
+        .toLowerCase() || "";
+
+    const bio = bioInput?.value.trim() || "";
+
+    if(!name){
+        toast("Ismingizni kiriting");
+        return;
+    }
+
+    if(!username){
+        toast("Username kiriting");
+        return;
+    }
+
+    if(username.length < 4){
+        toast("Username kamida 4 ta belgidan iborat bo‘lsin");
+        return;
+    }
+
+    if(state.usernameReserved){
+        await requestUsername(username);
+        return;
+    }
+
+    try{
+        const method = state.profile ? "PUT" : "POST";
+
+        const data = await api("/api/profile", {
+            method: method,
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                username:username,
+                name:name,
+                bio:bio,
+                avatar:state.avatar
+            })
+        });
+
+        if(data.ok){
+            state.profile = data.profile || {
+                username:username,
+                name:name,
+                bio:bio,
+                avatar:state.avatar
+            };
+
+            state.me = data;
+
+            closeSetup();
+
+            if(state.isAdmin){
+                openRole();
+            }else{
+                openMember();
+            }
+
+            toast("Profil saqlandi ✅");
+        }else{
+            toast(data.error || "Profilni saqlab bo‘lmadi");
+        }
+
+    }catch(error){
+        console.error(error);
+        toast("Server bilan bog‘lanishda xatolik");
+    }
+}
+
+
+async function requestUsername(username){
+    try{
+        const data = await api("/api/username/request", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                username:username
+            })
+        });
+
+        if(data.ok){
+            toast("So‘rov adminga yuborildi ✅");
+        }else{
+            toast(data.error || "So‘rov yuborilmadi");
+        }
+
+    }catch(error){
+        console.error(error);
+        toast("Xatolik yuz berdi");
+    }
+}
+
+
+function toast(message){
+    const box = document.getElementById("toast");
+
+    if(!box){
+        alert(message);
+        return;
+    }
+
+    box.textContent = message;
+    box.classList.add("show");
+
+    clearTimeout(window.toastTimer);
+
+    window.toastTimer = setTimeout(() => {
+        box.classList.remove("show");
+    }, 2500);
+}
+
+
+function escapeHtml(text){
+    if(text === null || text === undefined) return "";
+
+    return String(text)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+
+async function openMember(){
+    document.getElementById("roleScreen")?.classList.add("hidden");
+    document.getElementById("setupScreen")?.classList.add("hidden");
+    document.getElementById("adminScreen")?.classList.add("hidden");
+    document.getElementById("appScreen")?.classList.remove("hidden");
+
+    showPage("home");
+}
+
+
+async function openAdmin(){
+    if(!state.isAdmin){
+        toast("Siz admin emassiz");
+        return;
+    }
+
+    document.getElementById("roleScreen")?.classList.add("hidden");
+    document.getElementById("setupScreen")?.classList.add("hidden");
+    document.getElementById("appScreen")?.classList.add("hidden");
+    document.getElementById("adminScreen")?.classList.remove("hidden");
+
+    await loadAdmin();
+}
+
+
+function openRole(){
+    document.getElementById("setupScreen")?.classList.add("hidden");
+    document.getElementById("appScreen")?.classList.add("hidden");
+    document.getElementById("adminScreen")?.classList.add("hidden");
+    document.getElementById("roleScreen")?.classList.remove("hidden");
+}
+
+
+function showSetup(){
+    document.getElementById("roleScreen")?.classList.add("hidden");
+    document.getElementById("appScreen")?.classList.add("hidden");
+    document.getElementById("adminScreen")?.classList.add("hidden");
+    document.getElementById("setupScreen")?.classList.remove("hidden");
+
+    if(state.profile){
+        const name = document.getElementById("setupName");
+        const username = document.getElementById("setupUsername");
+        const bio = document.getElementById("setupBio");
+
+        if(name) name.value = state.profile.name || "";
+        if(username) username.value = state.profile.username || "";
+        if(bio) bio.value = state.profile.bio || "";
+
+        state.avatar = state.profile.avatar || "";
+    }
+}
+
+
+function closeSetup(){
+    document.getElementById("setupScreen")?.classList.add("hidden");
+}
+
+
+function showPage(page){
+    document.querySelectorAll(".page").forEach(el => {
+        el.classList.add("hidden");
+    });
+
+    const target = document.getElementById(page + "Page");
+
+    if(target){
+        target.classList.remove("hidden");
+    }
+
+    document.querySelectorAll(".bottom-item").forEach(el => {
+        el.classList.remove("active");
+    });
+
+    const active = document.querySelector(
+        `[data-page="${page}"]`
+    );
+
+    if(active){
+        active.classList.add("active");
+    }
+
+    if(page === "profile"){
+        renderProfile();
+    }
+}
+
+
+function renderProfile(){
+    const container = document.getElementById("profileContent");
+
+    if(!container || !state.profile) return;
+
+    const p = state.profile;
+
+    const avatar = p.avatar
+        ? `<img src="${escapeHtml(p.avatar)}">`
+        : `<span>${escapeHtml((p.name || "P").charAt(0).toUpperCase())}</span>`;
+
+    container.innerHTML = `
+        <div class="profile-card">
+            <div class="profile-avatar">
+                ${avatar}
+            </div>
+
+            <h2>${escapeHtml(p.name || "")}</h2>
+
+            <div class="profile-username">
+                @${escapeHtml(p.username || "")}
+            </div>
+
+            <p>${escapeHtml(p.bio || "")}</p>
+
+            <button onclick="showSetup()">
+                Profilni tahrirlash
+            </button>
+        </div>
+    `;
+}
+
+
+async function loadAdmin(){
+    try{
+        const stats = await api("/api/admin/stats");
+
+        const statsBox = document.getElementById("adminStats");
+
+        if(statsBox){
+            statsBox.innerHTML = `
+                <div class="admin-stat">
+                    <b>${stats.users ?? 0}</b>
+                    <span>A'zolar</span>
+                </div>
+
+                <div class="admin-stat">
+                    <b>${stats.reserved ?? 0}</b>
+                    <span>Band username</span>
+                </div>
+
+                <div class="admin-stat">
+                    <b>${stats.requests ?? 0}</b>
+                    <span>So‘rovlar</span>
+                </div>
+            `;
+        }
+
+        await loadAdminRequests();
+        await loadReservedUsernames();
+
+    }catch(error){
+        console.error(error);
+        toast("Admin ma'lumotlarini yuklab bo‘lmadi");
+    }
+}
+
+
+async function loadAdminRequests(){
+    const box = document.getElementById("adminRequests");
+
+    if(!box) return;
+
+    try{
+        const data = await api("/api/admin/requests");
+
+        const requests = data.requests || [];
+
+        if(!requests.length){
+            box.innerHTML = "<p>Hozircha so‘rovlar yo‘q.</p>";
+            return;
+        }
+
+        box.innerHTML = requests.map(r => `
+            <div class="request-card">
+                <b>@${escapeHtml(r.username)}</b>
+
+                <div>
+                    User ID:
+                    ${escapeHtml(r.user_id)}
+                </div>
+
+                <div class="request-actions">
+                    <button onclick="giveUsername(${r.id})">
+                        Berish
+                    </button>
+
+                    <button onclick="rejectUsername(${r.id})">
+                        Rad etish
+                    </button>
+                </div>
+            </div>
+        `).join("");
+
+    }catch(error){
+        console.error(error);
+        box.innerHTML = "<p>Xatolik yuz berdi.</p>";
+    }
+}
+
+
+async function giveUsername(requestId){
+    try{
+        const data = await api("/api/admin/give", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                request_id:requestId
+            })
+        });
+
+        toast(data.ok ? "Username berildi ✅" : (data.error || "Xatolik"));
+
+        if(data.ok){
+            loadAdmin();
+        }
+
+    }catch(error){
+        console.error(error);
+        toast("Xatolik yuz berdi");
+    }
+}
+
+
+async function rejectUsername(requestId){
+    try{
+        const data = await api("/api/admin/reject", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                request_id:requestId
+            })
+        });
+
+        toast(data.ok ? "So‘rov rad etildi" : (data.error || "Xatolik"));
+
+        if(data.ok){
+            loadAdmin();
+        }
+
+    }catch(error){
+        console.error(error);
+        toast("Xatolik yuz berdi");
+    }
+}
+
+
+async function reserveUsername(){
+    const input = document.getElementById("adminUsername");
+
+    if(!input) return;
+
+    const username = input.value
+        .trim()
+        .replace(/^@/,"")
+        .toLowerCase();
+
+    if(!username){
+        toast("Username kiriting");
+        return;
+    }
+
+    try{
+        const data = await api("/api/admin/reserve", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                username:username
+            })
+        });
+
+        toast(data.ok ? "Username band qilindi ✅" : (data.error || "Xatolik"));
+
+        if(data.ok){
+            input.value = "";
+            loadAdmin();
+        }
+
+    }catch(error){
+        console.error(error);
+        toast("Xatolik yuz berdi");
+    }
+}
+
+
+async function loadReservedUsernames(){
+    const box = document.getElementById("reservedUsernames");
+
+    if(!box) return;
+
+    try{
+        const data = await api("/api/admin/reserved");
+
+        const usernames = data.usernames || [];
+
+        if(!usernames.length){
+            box.innerHTML = "<p>Band qilingan username yo‘q.</p>";
+            return;
+        }
+
+        box.innerHTML = usernames.map(u => `
+            <div class="reserved-card">
+                <b>@${escapeHtml(u.username)}</b>
+
+                <button onclick="releaseUsername('${escapeHtml(u.username)}')">
+                    Bo‘shatish
+                </button>
+            </div>
+        `).join("");
+
+    }catch(error){
+        console.error(error);
+        box.innerHTML = "<p>Xatolik yuz berdi.</p>";
+    }
+}
+
+
+async function releaseUsername(username){
+    if(!confirm(
+        "@" + username + " username'ni bo‘shatishni tasdiqlaysizmi?"
+    )){
+        return;
+    }
+
+    try{
+        const data = await api("/api/admin/release", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                username:username
+            })
+        });
+
+        toast(data.ok ? "Username bo‘shatildi ✅" : (data.error || "Xatolik"));
+
+        if(data.ok){
+            loadAdmin();
+        }
+
+    }catch(error){
+        console.error(error);
+        toast("Xatolik yuz berdi");
+    }
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const avatarInput =
+        document.getElementById("avatarInput");
+
+    if(avatarInput){
+        avatarInput.addEventListener(
+            "change",
+            handleAvatar
+        );
+    }
+
+    const usernameInput =
+        document.getElementById("setupUsername");
+
+    if(usernameInput){
+        usernameInput.addEventListener(
+            "input",
+            checkUsername
+        );
+    }
+
+    const saveButton =
+        document.getElementById("saveProfile");
+
+    if(saveButton){
+        saveButton.addEventListener(
+            "click",
+            saveProfile
+        );
+    }
+
+    document.querySelectorAll(".bottom-item").forEach(item => {
+        item.addEventListener("click", () => {
+            const page = item.dataset.page;
+
+            if(page){
+                showPage(page);
+            }
+        });
+    });
+
+    start();
+});
