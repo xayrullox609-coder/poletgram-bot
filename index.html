@@ -6,34 +6,6 @@
 
 <title>Poletgram</title>
 
-            toast("Poletgramni Telegram ichidan oching");
-            return;
-        }
-
-        const data = await api("/api/me");
-
-        state.me = data;
-        state.profile = data.profile || null;
-        state.isAdmin = !!data.is_admin;
-
-        if(loading) loading.classList.add("hidden");
-
-        if(!state.profile){
-            showSetup();
-            return;
-        }
-
-        openRole();
-
-    } catch(error) {
-
-        console.error(error);
-
-        if(loading) loading.classList.add("hidden");
-
-        toast("Serverga ulanishda xatolik");
-    }
-}
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
